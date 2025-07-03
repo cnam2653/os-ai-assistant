@@ -1,41 +1,57 @@
-import os
-import signal
-
-from elevenlabs.client import ElevenLabs
-from elevenlabs.conversational_ai.conversation import Conversation
-from elevenlabs.conversational_ai.default_audio_interface import DefaultAudioInterface
 from dotenv import load_dotenv
-from tools import client_tools
 
+from livekit import agents
+from livekit.agents import AgentSession, Agent, RoomInputOptions
+from livekit.plugins import (
+    noise_cancellation,
+)
+from livekit.plugins import google
+from prompts import AGENT_INSTRUCTION, SESSION_INSTRUCTION
+from tools import get_weather, search_web, send_email
 load_dotenv()
 
-agent_id = os.getenv("AGENT_ID")
-api_key = os.getenv("ELEVENLABS_API_KEY")
 
-elevenlabs = ElevenLabs(api_key=api_key)
+class Assistant(Agent):
+    def __init__(self) -> None:
+        super().__init__(
+            instructions=AGENT_INSTRUCTION,
+            llm=google.beta.realtime.RealtimeModel(
+            voice="Aoede",
+            temperature=0.8,
+        ),
+            tools=[
+                get_weather,
+                search_web,
+                send_email
+            ],
 
-conversation = Conversation(
-    # API client and agent ID.
-    elevenlabs,
-    agent_id,
-    client_tools=client_tools,
+        )
+        
 
-    # Assume auth is required when API_KEY is set.
-    requires_auth=bool(api_key),
 
-    # Use the default audio interface.
-    audio_interface=DefaultAudioInterface(),
+async def entrypoint(ctx: agents.JobContext):
+    session = AgentSession(
+        
+    )
 
-    # Simple callbacks that print the conversation to the console.
-    callback_agent_response=lambda response: print(f"Agent: {response}"),
-    callback_agent_response_correction=lambda original, corrected: print(f"Agent: {original} -> {corrected}"),
-    callback_user_transcript=lambda transcript: print(f"User: {transcript}"),
+    await session.start(
+        room=ctx.room,
+        agent=Assistant(),
+        room_input_options=RoomInputOptions(
+            # LiveKit Cloud enhanced noise cancellation
+            # - If self-hosting, omit this parameter
+            # - For telephony applications, use `BVCTelephony` for best results
+            video_enabled=True,
+            noise_cancellation=noise_cancellation.BVC(),
+        ),
+    )
 
-    # Uncomment if you want to see latency measurements.
-    # callback_latency_measurement=lambda latency: print(f"Latency: {latency}ms"),
-)
+    await ctx.connect()
 
-conversation.start_session()
-signal.signal(signal.SIGINT, lambda sig, frame: conversation.end_session())
-conversation_id = conversation.wait_for_session_end()
-print(f"Conversation ID: {conversation_id}")
+    await session.generate_reply(
+        instructions=SESSION_INSTRUCTION,
+    )
+
+
+if __name__ == "__main__":
+    agents.cli.run_app(agents.WorkerOptions(entrypoint_fnc=entrypoint))

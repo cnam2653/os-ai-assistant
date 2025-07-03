@@ -1,6 +1,10 @@
-elevenlabs
-pyaudio
-openai
-dotenv
-pillow
+livekit-agents
+livekit-plugins-openai
+livekit-plugins-silero
+livekit-plugins-google
+livekit-plugins-noise-cancellation
+mem0ai
+duckduckgo-search
 langchain_community
+requests
+python-dotenv
