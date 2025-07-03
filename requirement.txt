@@ -1,10 +1,15 @@
-livekit-agents
-livekit-plugins-openai
-livekit-plugins-silero
-livekit-plugins-google
-livekit-plugins-noise-cancellation
-mem0ai
-duckduckgo-search
-langchain_community
-requests
 python-dotenv
+pvporcupine
+pyaudio
+livekit
+livekit-agents
+livekit-plugins-noise-cancellation
+livekit-plugins-google
+requests
+langchain-community
+duckduckgo-search
+
+# New dependencies for STT and GPT parsing
+SpeechRecognition
+openai
+pyaudio
