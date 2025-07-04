@@ -10,7 +10,25 @@ requests
 langchain-community
 duckduckgo-search
 
-# New dependencies for STT and GPT parsing
+# STT and GPT parsing dependencies
 SpeechRecognition
 openai
-pyaudio
+
+# Email functionality
+secure-smtplib  # Enhanced SMTP support 
+
+# System process management
+psutil
+
+# GUI automation and control
+pyautogui
+
+# Audio control (Windows-specific)
+pycaw
+comtypes
+
+# Additional system utilities
+Pillow  # For screenshot functionality (pyautogui dependency)
+
+# Optional: For better type hints
+typing-extensions

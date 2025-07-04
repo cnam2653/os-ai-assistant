@@ -15,7 +15,25 @@ from livekit.agents import AgentSession, Agent, RoomInputOptions
 from livekit.plugins import noise_cancellation
 from livekit.plugins import google
 from prompts import AGENT_INSTRUCTION, SESSION_INSTRUCTION, FUNCTION_PARSER_PROMPT
-from tools import get_weather, search_web, send_email
+from tools import (
+    get_weather, 
+    search_web, 
+    send_email, 
+    open_application, 
+    close_application, 
+    find_app_paths, 
+    open_file,
+    run_command,
+    move_cursor,
+    click_mouse,
+    scroll_mouse,
+    type_text,
+    press_key,
+    adjust_volume,
+    take_screenshot,
+    get_cursor_position,
+    get_screen_size
+)
 
 # Load .env variables
 load_dotenv()
@@ -87,7 +105,21 @@ class FunctionParser:
         self.available_functions = {
             "get_weather": get_weather,
             "search_web": search_web,
-            "send_email": send_email
+            "send_email": send_email,
+            "open_application": open_application,
+            "close_application": close_application,
+            "find_application": find_app_paths,
+            "open_file": open_file,
+            "run_command": run_command,
+            "move_cursor": move_cursor,
+            "click_mouse": click_mouse,
+            "scroll_mouse": scroll_mouse,
+            "type_text": type_text,
+            "press_key": press_key,
+            "adjust_volume": adjust_volume,
+            "take_screenshot": take_screenshot,
+            "get_cursor_position": get_cursor_position,
+            "get_screen_size": get_screen_size
         }
     
     async def parse_and_execute(self, text: str, session):
@@ -95,7 +127,7 @@ class FunctionParser:
         try:
             # Use OpenAI to parse the text and extract function calls
             response = openai.chat.completions.create(
-                model="gpt-3.5-turbo",
+                model="gpt-4o",
                 messages=[
                     {"role": "system", "content": FUNCTION_PARSER_PROMPT},
                     {"role": "user", "content": text}
@@ -135,13 +167,8 @@ class FunctionParser:
                 
                 mock_context = MockContext()
                 
-                # Execute the function
-                if function_name == "get_weather":
-                    result = await self.available_functions[function_name](mock_context, **parameters)
-                elif function_name == "search_web":
-                    result = await self.available_functions[function_name](mock_context, **parameters)
-                elif function_name == "send_email":
-                    result = await self.available_functions[function_name](mock_context, **parameters)
+                # Execute the function with mock context
+                result = await self.available_functions[function_name](mock_context, **parameters)
                 
                 print(f"Function {function_name} executed: {result}")
                 
@@ -169,7 +196,21 @@ class Assistant(Agent):
             tools=[
                 get_weather,
                 search_web,
-                send_email
+                send_email,
+                open_application,
+                close_application,
+                find_app_paths,
+                open_file,
+                run_command,
+                move_cursor,
+                click_mouse,
+                scroll_mouse,
+                type_text,
+                press_key,
+                adjust_volume,
+                take_screenshot,
+                get_cursor_position,
+                get_screen_size
             ],
         )
 
