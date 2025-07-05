@@ -17,7 +17,7 @@ from livekit.plugins import google
 from prompts import AGENT_INSTRUCTION, SESSION_INSTRUCTION, FUNCTION_PARSER_PROMPT
 
 # Import all tools from tools package
-from tools.web_utils import get_weather, search_web
+from tools.web_utils import get_weather, search_web, get_current_time, get_current_date, get_current_datetime
 from tools.os_commands import (
     send_email, 
     open_application, 
@@ -121,7 +121,10 @@ class FunctionParser:
             "adjust_volume": adjust_volume,
             "take_screenshot": take_screenshot,
             "get_cursor_position": get_cursor_position,
-            "get_screen_size": get_screen_size
+            "get_screen_size": get_screen_size,
+            "get_current_time": get_current_time,
+            "get_current_date":get_current_date,
+            "get_current_datetime":get_current_datetime
         }
     
     async def parse_and_execute(self, text: str, session):
@@ -212,7 +215,10 @@ class Assistant(Agent):
                 adjust_volume,
                 take_screenshot,
                 get_cursor_position,
-                get_screen_size
+                get_screen_size,
+                get_current_time,
+                get_current_date,
+                get_current_datetime
             ],
         )
 
