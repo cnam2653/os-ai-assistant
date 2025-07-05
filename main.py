@@ -15,25 +15,27 @@ from livekit.agents import AgentSession, Agent, RoomInputOptions
 from livekit.plugins import noise_cancellation
 from livekit.plugins import google
 from prompts import AGENT_INSTRUCTION, SESSION_INSTRUCTION, FUNCTION_PARSER_PROMPT
-from tools import (
-    get_weather, 
-    search_web, 
+
+# Import all tools from tools package
+from tools.web_utils import get_weather, search_web
+from tools.os_commands import (
     send_email, 
     open_application, 
     close_application, 
     find_app_paths, 
     open_file,
-    run_command,
+    run_command
+)
+from tools.mouse_key import (
     move_cursor,
     click_mouse,
     scroll_mouse,
     type_text,
     press_key,
-    adjust_volume,
-    take_screenshot,
-    get_cursor_position,
-    get_screen_size
+    get_cursor_position
 )
+from tools.screen import take_screenshot, get_screen_size
+from tools.audio_control import adjust_volume
 
 # Load .env variables
 load_dotenv()
