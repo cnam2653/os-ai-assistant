@@ -34,7 +34,17 @@ from tools.mouse_key import (
     press_key,
     get_cursor_position
 )
-from tools.screen import take_screenshot, get_screen_size
+from tools.interview import (
+    start_interview_session,
+    set_resume_path,
+    tell_about_yourself,
+    setup_interview,
+    get_next_question,
+    submit_answer,
+    check_code_solution,
+    evaluate_interview
+)
+from tools.screen import take_screenshot, get_screen_size, read_screen
 from tools.audio_control import adjust_volume
 
 # Load .env variables
@@ -124,7 +134,16 @@ class FunctionParser:
             "get_screen_size": get_screen_size,
             "get_current_time": get_current_time,
             "get_current_date":get_current_date,
-            "get_current_datetime":get_current_datetime
+            "get_current_datetime":get_current_datetime,
+            "read_screen": read_screen,
+            "start_interview_session": start_interview_session,
+            "get_next_question": get_next_question,
+            "submit_answer": submit_answer,
+            "set_resume_path": set_resume_path,
+            "tell_about_yourself": tell_about_yourself,
+            "setup_interview": setup_interview,
+            "evaluate_interview": evaluate_interview,
+            "check_code_solution": check_code_solution
         }
     
     async def parse_and_execute(self, text: str, session):
@@ -218,7 +237,16 @@ class Assistant(Agent):
                 get_screen_size,
                 get_current_time,
                 get_current_date,
-                get_current_datetime
+                get_current_datetime,
+                read_screen,
+                start_interview_session,
+                set_resume_path,
+                tell_about_yourself,
+                setup_interview,
+                get_next_question,
+                submit_answer,
+                check_code_solution,
+                evaluate_interview
             ],
         )
 
@@ -282,7 +310,7 @@ async def listen_for_wake_word_and_respond(session):
                 stt_handler.stop_listening()
                 
                 if not speech_detected:
-                    print("⏰ No speech detected within timeout period")
+                    print("No speech detected within timeout period")
                     await session.generate_reply(instructions="I didn't hear anything, sir. How may I assist you?")
             
             await asyncio.sleep(0)  # yield control to event loop

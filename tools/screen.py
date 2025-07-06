@@ -3,6 +3,8 @@ from livekit.agents import function_tool, RunContext
 import pyautogui
 import os
 from datetime import datetime
+import base64
+from io import BytesIO
 
 @function_tool()
 async def take_screenshot(
@@ -96,6 +98,105 @@ async def take_screenshot(
         logging.error(f"Full traceback: {traceback.format_exc()}")
         return f"An error occurred while taking screenshot: {str(e)}"
 
+@function_tool()
+async def read_screen(
+    context: RunContext,  # type: ignore
+) -> str:
+    """
+    Take a screenshot and describe what's currently on the screen.
+    """
+    try:
+        logging.info("Screen reading function called")
+        import os
+        import openai
+        from dotenv import load_dotenv
+
+        load_dotenv()  # loads .env if needed
+        if not openai.api_key:
+            openai.api_key = os.getenv("OPENAI_API_KEY")
+        # Take screenshot
+        logging.info("Taking screenshot for screen reading...")
+        screenshot = pyautogui.screenshot()
+        logging.info(f"Screenshot captured - Size: {screenshot.size}")
+        
+        # Convert screenshot to base64 for AI analysis
+        buffer = BytesIO()
+        screenshot.save(buffer, format='PNG')
+        img_base64 = base64.b64encode(buffer.getvalue()).decode()
+        
+        # Try using OpenAI GPT-4 Vision
+        try:
+            
+            response = openai.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Describe what you see on this screen. Include details about any applications, documents, videos, websites, or other content that's visible. Be specific about what's displayed and what the user might be working on."
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/png;base64,{img_base64}"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                max_tokens=500
+            )
+            
+            description = response.choices[0].message.content
+            logging.info(f"Screen reading completed successfully")
+            return f"Here's what I can see on your screen: {description}"
+            
+        except ImportError:
+            logging.error("OpenAI library not installed")
+            return "Error: OpenAI library not installed. Please install it with: pip install openai"
+        except Exception as api_error:
+            logging.error(f"API error: {api_error}")
+            
+            # Fallback: Basic screen analysis without AI
+            try:
+                import psutil
+                import win32gui
+                import win32process
+                
+                def get_active_window():
+                    try:
+                        hwnd = win32gui.GetForegroundWindow()
+                        if hwnd:
+                            window_text = win32gui.GetWindowText(hwnd)
+                            _, pid = win32process.GetWindowThreadProcessId(hwnd)
+                            try:
+                                process = psutil.Process(pid)
+                                process_name = process.name()
+                                return f"Active window: '{window_text}' (Application: {process_name})"
+                            except:
+                                return f"Active window: '{window_text}'"
+                        return "No active window detected"
+                    except:
+                        return "Could not detect active window"
+                
+                # Get basic screen info
+                screen_width, screen_height = pyautogui.size()
+                active_window = get_active_window()
+                
+                return f"Screen resolution: {screen_width}x{screen_height}. {active_window}. Note: For detailed screen content description, please configure OpenAI API key for GPT-4 Vision."
+                
+            except ImportError:
+                screen_width, screen_height = pyautogui.size()
+                return f"Screen resolution: {screen_width}x{screen_height}. For detailed screen reading, please install required libraries: pip install openai pywin32 psutil"
+    
+    except Exception as e:
+        logging.error(f"Error reading screen: {e}")
+        import traceback
+        logging.error(f"Full traceback: {traceback.format_exc()}")
+        return f"An error occurred while reading screen: {str(e)}"
+    
 @function_tool()
 async def get_screen_size(
     context: RunContext  # type: ignore
