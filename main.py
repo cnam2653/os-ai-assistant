@@ -80,13 +80,17 @@ class STTHandler:
         print("Microphone calibrated.")
     
     def start_listening(self):
-        """Start continuous listening for speech"""
+        if self.is_listening:
+            print("Already listening. Ignoring start request.")
+            return
         self.is_listening = True
         listen_thread = Thread(target=self._listen_loop, daemon=True)
         listen_thread.start()
-    
+
     def stop_listening(self):
-        """Stop listening for speech"""
+        if not self.is_listening:
+            print("Not listening. Nothing to stop.")
+            return
         self.is_listening = False
     
     def _listen_loop(self):
@@ -339,7 +343,7 @@ async def handle_memory_commands(transcription: str, session, room_id: str = Non
     
     # Set preference
     elif text.startswith("set preference") or text.startswith("i prefer"):
-        # Simple preference setting - you can expand this
+        # Simple preference setting 
         if "voice" in text:
             if "aoede" in text:
                 memory.set_user_preference("voice", "Aoede", room_id)
