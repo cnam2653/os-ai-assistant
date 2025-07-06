@@ -16,6 +16,9 @@ from livekit.plugins import noise_cancellation
 from livekit.plugins import google
 from prompts import AGENT_INSTRUCTION, SESSION_INSTRUCTION, FUNCTION_PARSER_PROMPT
 
+# Import Redis Memory System
+from jarvis_memory import JarvisMemory
+
 # Import all tools from tools package
 from tools.web_utils import get_weather, search_web, get_current_time, get_current_date, get_current_datetime
 from tools.os_commands import (
@@ -52,6 +55,13 @@ load_dotenv()
 
 # Initialize OpenAI
 openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# Initialize Redis Memory System
+memory = JarvisMemory(
+    redis_host=os.getenv("REDIS_HOST", "localhost"),
+    redis_port=int(os.getenv("REDIS_PORT", 6379)),
+    redis_db=int(os.getenv("REDIS_DB", 0))
+)
 
 # --------------------------------------------- 
 # Speech-to-Text Handler
@@ -110,10 +120,11 @@ class STTHandler:
         return None
 
 # --------------------------------------------- 
-# Function Parser using OpenAI
+# Enhanced Function Parser with Memory
 # --------------------------------------------- 
 class FunctionParser:
-    def __init__(self):
+    def __init__(self, memory_system: JarvisMemory):
+        self.memory = memory_system
         self.available_functions = {
             "get_weather": get_weather,
             "search_web": search_web,
@@ -133,8 +144,8 @@ class FunctionParser:
             "get_cursor_position": get_cursor_position,
             "get_screen_size": get_screen_size,
             "get_current_time": get_current_time,
-            "get_current_date":get_current_date,
-            "get_current_datetime":get_current_datetime,
+            "get_current_date": get_current_date,
+            "get_current_datetime": get_current_datetime,
             "read_screen": read_screen,
             "start_interview_session": start_interview_session,
             "get_next_question": get_next_question,
@@ -146,14 +157,31 @@ class FunctionParser:
             "check_code_solution": check_code_solution
         }
     
-    async def parse_and_execute(self, text: str, session):
-        """Parse text for function calls and execute them"""
+    async def parse_and_execute(self, text: str, session, room_id: str = None):
+        """Parse text for function calls and execute them with memory"""
         try:
+            # Get conversation context and command patterns from memory
+            conversation_context = self.memory.get_conversation_context(room_id)
+            command_patterns = self.memory.get_command_patterns(room_id)
+            user_preferences = self.memory.get_all_preferences(room_id)
+            
+            # Enhanced prompt with memory context
+            enhanced_prompt = FUNCTION_PARSER_PROMPT
+            
+            if conversation_context:
+                enhanced_prompt += f"\n\nRecent conversation context:\n{conversation_context}"
+            
+            if command_patterns:
+                enhanced_prompt += f"\n\nRecent command patterns:\n{command_patterns}"
+            
+            if user_preferences:
+                enhanced_prompt += f"\n\nUser preferences: {json.dumps(user_preferences)}"
+            
             # Use OpenAI to parse the text and extract function calls
             response = openai.chat.completions.create(
                 model="gpt-4o",
                 messages=[
-                    {"role": "system", "content": FUNCTION_PARSER_PROMPT},
+                    {"role": "system", "content": enhanced_prompt},
                     {"role": "user", "content": text}
                 ],
                 temperature=0.1
@@ -165,7 +193,7 @@ class FunctionParser:
             try:
                 function_call = json.loads(result)
                 if function_call.get("function_name") and function_call.get("function_name") != "none":
-                    await self._execute_function(function_call, session)
+                    await self._execute_function(function_call, session, room_id, text)
                     return True
             except json.JSONDecodeError:
                 # If not JSON, check if it's a "none" response
@@ -178,8 +206,8 @@ class FunctionParser:
         
         return False
     
-    async def _execute_function(self, function_call: dict, session):
-        """Execute the parsed function"""
+    async def _execute_function(self, function_call: dict, session, room_id: str, original_command: str):
+        """Execute the parsed function and store in memory"""
         function_name = function_call.get("function_name")
         parameters = function_call.get("parameters", {})
         
@@ -196,6 +224,18 @@ class FunctionParser:
                 
                 print(f"Function {function_name} executed: {result}")
                 
+                # Store command execution in memory
+                self.memory.store_command_execution(
+                    command=original_command,
+                    function_name=function_name,
+                    parameters=parameters,
+                    result=result,
+                    room_id=room_id
+                )
+                
+                # Increment usage metric
+                self.memory.increment_usage_metric(f"function_{function_name}")
+                
                 # Send result back to assistant
                 await session.generate_reply(instructions=f"The function {function_name} was executed with result: {result}")
                 
@@ -207,14 +247,20 @@ class FunctionParser:
             print(f"Unknown function: {function_name}")
 
 # --------------------------------------------- 
-# LiveKit Agent Definition
+# Enhanced LiveKit Agent with Memory
 # --------------------------------------------- 
-class Assistant(Agent):
-    def __init__(self) -> None:
+class JarvisAgent(Agent):
+    def __init__(self, memory_system: JarvisMemory):
+        self.memory = memory_system
+        
+        # Get user preferences for voice settings
+        voice_preference = self.memory.get_user_preference("voice", None)
+        selected_voice = voice_preference if voice_preference else "Aoede"
+        
         super().__init__(
             instructions=AGENT_INSTRUCTION,
             llm=google.beta.realtime.RealtimeModel(
-                voice="Aoede",
+                voice=selected_voice,
                 temperature=0.8,
             ),
             tools=[
@@ -251,9 +297,79 @@ class Assistant(Agent):
         )
 
 # --------------------------------------------- 
-# Async Wake Word Detection and STT Loop
+# Memory Command Handler
 # --------------------------------------------- 
-async def listen_for_wake_word_and_respond(session):
+async def handle_memory_commands(transcription: str, session, room_id: str = None) -> bool:
+    """Handle special memory-related commands"""
+    text = transcription.lower()
+    
+    # Remember something
+    if text.startswith("remember that") or text.startswith("remember this"):
+        memory_text = text.replace("remember that", "").replace("remember this", "").strip()
+        memory.set_context("user_note", memory_text, expiry_minutes=1440, room_id=room_id)  # 24 hours
+        await session.generate_reply(instructions=f"I'll remember that: {memory_text}")
+        return True
+    
+    # Recall something
+    elif "what do you remember" in text or "what did i tell you to remember" in text:
+        user_note = memory.get_context("user_note", room_id)
+        if user_note:
+            await session.generate_reply(instructions=f"You told me to remember: {user_note}")
+        else:
+            await session.generate_reply(instructions="I don't have any specific notes to remember right now.")
+        return True
+    
+    # Clear memory
+    elif "forget everything" in text or "clear memory" in text:
+        memory.clear_context(room_id=room_id)
+        await session.generate_reply(instructions="I've cleared my memory context.")
+        return True
+    
+    # Memory status
+    elif any(phrase in text for phrase in [
+        "memory status",
+        "what is your memory status",
+        "how is your memory",
+        "what's your memory"
+    ]):
+
+        status = memory.get_memory_status()
+        await session.generate_reply(instructions=f"Memory status: {status}")
+        return True
+    
+    # Set preference
+    elif text.startswith("set preference") or text.startswith("i prefer"):
+        # Simple preference setting - you can expand this
+        if "voice" in text:
+            if "aoede" in text:
+                memory.set_user_preference("voice", "Aoede", room_id)
+                await session.generate_reply(instructions="I've set your voice preference to Aoede.")
+        return True
+    
+    # Show recent commands
+    elif any(phrase in text for phrase in [
+        "show recent commands", 
+        "show me recent commands", 
+        "show my recent commands", 
+        "recent commands", 
+        "what have i asked you to do"
+    ]):
+        recent_commands = memory.get_recent_commands(5, room_id)
+        if recent_commands:
+            commands_text = "Recent commands:\n"
+            for cmd in recent_commands:
+                commands_text += f"- {cmd['command']} → {cmd['function_name']}\n"
+            await session.generate_reply(instructions=commands_text)
+        else:
+            await session.generate_reply(instructions="No recent commands to show.")
+        return True
+    
+    return False
+
+# --------------------------------------------- 
+# Enhanced Wake Word Detection with Memory
+# --------------------------------------------- 
+async def listen_for_wake_word_and_respond(session, room_id: str = None):
     access_key = os.environ["PORCUPINE_ACCESS_KEY"]
     porcupine = pvporcupine.create(access_key=access_key, keywords=["jarvis"])
     
@@ -266,11 +382,12 @@ async def listen_for_wake_word_and_respond(session):
         frames_per_buffer=porcupine.frame_length
     )
     
-    # Initialize STT handler and function parser
+    # Initialize STT handler and function parser with memory
     stt_handler = STTHandler()
-    function_parser = FunctionParser()
+    function_parser = FunctionParser(memory)
     
     print("Wake word listener running. Say 'Jarvis' anytime to trigger the assistant.")
+    print(f"Memory system status: {memory.get_memory_status()}")
     
     try:
         while True:
@@ -280,6 +397,9 @@ async def listen_for_wake_word_and_respond(session):
             
             if result >= 0:
                 print("Wake word 'Jarvis' detected! Starting speech recognition...")
+                
+                # Increment wake word metric
+                memory.increment_usage_metric("wake_word_triggered")
                 
                 # Start listening for speech
                 stt_handler.start_listening()
@@ -294,8 +414,22 @@ async def listen_for_wake_word_and_respond(session):
                     if transcription:
                         print(f"🎤 Transcribed: '{transcription}'")
                         
-                        # Parse for function calls
-                        function_executed = await function_parser.parse_and_execute(transcription, session)
+                        # Check for special memory commands
+                        if await handle_memory_commands(transcription, session, room_id):
+                            speech_detected = True
+                            continue
+                        
+                        # Parse for function calls with memory context
+                        function_executed = await function_parser.parse_and_execute(
+                            transcription, session, room_id
+                        )
+                        
+                        # Store the conversation
+                        memory.store_conversation(
+                            user_input=transcription,
+                            assistant_response="[Processing...]",
+                            room_id=room_id
+                        )
                         
                         # If no function was executed, send to normal assistant
                         if not function_executed:
@@ -313,7 +447,7 @@ async def listen_for_wake_word_and_respond(session):
                     print("No speech detected within timeout period")
                     await session.generate_reply(instructions="I didn't hear anything, sir. How may I assist you?")
             
-            await asyncio.sleep(0)  # yield control to event loop
+            await asyncio.sleep(0.01)  # Small delay to prevent busy waiting
     
     except Exception as e:
         print(f"Wake word error: {e}")
@@ -328,11 +462,23 @@ async def listen_for_wake_word_and_respond(session):
 # LiveKit Entry Point
 # --------------------------------------------- 
 async def entrypoint(ctx: agents.JobContext):
+    """Main entrypoint for the LiveKit agent"""
+    print("Starting Jarvis with Redis Memory System...")
+    print(f"Connected to room: {ctx.room.name}")
+    print(f"Memory system status: {memory.get_memory_status()}")
+    
+    # Get room ID for session management
+    room_id = ctx.room.name
+    
+    # Initialize agent with memory
+    agent = JarvisAgent(memory)
+    
+    # Start the agent session
     session = AgentSession()
     
     await session.start(
         room=ctx.room,
-        agent=Assistant(),
+        agent=agent,
         room_input_options=RoomInputOptions(
             video_enabled=True,
             noise_cancellation=noise_cancellation.BVC(),
@@ -342,13 +488,23 @@ async def entrypoint(ctx: agents.JobContext):
     print("LiveKit session started and connected to room.")
     
     # Start wake word listening in background
-    asyncio.create_task(listen_for_wake_word_and_respond(session))
+    asyncio.create_task(listen_for_wake_word_and_respond(session, room_id))
     
     # Keep the connection alive
     await ctx.connect()
 
 # --------------------------------------------- 
-# Main
+# Main Entry Point
 # --------------------------------------------- 
 if __name__ == "__main__":
+    print("Starting Jarvis with Redis Memory System...")
+    print("Memory commands available:")
+    print("- 'Remember that [something]' - Store a note")
+    print("- 'What do you remember' - Recall stored notes")
+    print("- 'Forget everything' - Clear memory")
+    print("- 'Memory status' - Check memory system status")
+    print("- 'Set preference voice aoede' - Set voice preference")
+    print("- 'Show recent commands' - Display recent command history")
+    
+    # Run the LiveKit CLI
     agents.cli.run_app(agents.WorkerOptions(entrypoint_fnc=entrypoint))

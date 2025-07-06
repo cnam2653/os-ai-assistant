@@ -140,7 +140,7 @@ async def submit_answer(context: RunContext, answer: str) -> str:
     interview_state.current_question_index += 1
     
     if interview_state.current_question_index >= len(interview_state.questions):
-        return f"{feedback}\n\n🎉 Interview completed! Use evaluate_interview() to get your final assessment."
+        return f"{feedback}\n\nInterview completed! Use evaluate_interview() to get your final assessment."
     else:
         return f"{feedback}\n\nReady for the next question? Use get_next_question() when you're ready."
 

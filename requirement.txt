@@ -32,3 +32,5 @@ Pillow  # For screenshot functionality (pyautogui dependency)
 
 # Optional: For better type hints
 typing-extensions
+
+redis
