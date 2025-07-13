@@ -287,23 +287,21 @@ async def find_app_paths(
 @function_tool()
 async def close_application(
     context: RunContext,  # type: ignore
-    app_name: str) -> str:
+    application_name: str
+) -> str:
     """
     Close an application by name on Windows with better process targeting.
     
     Args:
-        app_name: Name of the application to close (e.g., "steam", "chrome", "notepad")
+        application_name: Name of the application to close (e.g., "steam", "chrome", "notepad")
     """
-    app_name_lower = app_name.lower()
+    app_name_lower = application_name.lower()
     closed_processes = []
     
     # More specific process name mappings for better targeting
     process_mappings = {
         "chrome": ["chrome.exe"],
         "google chrome": ["chrome.exe"],
-        "firefox": ["firefox.exe"],
-        "edge": ["msedge.exe"],
-        "microsoft edge": ["msedge.exe"],
         "discord": ["Discord.exe"],
         "steam": ["steam.exe"],
         "valorant": ["VALORANT.exe", "RiotClientServices.exe"],
@@ -317,7 +315,6 @@ async def close_application(
         "task manager": ["taskmgr.exe"],
         "calculator": ["calc.exe"],
         "notepad": ["notepad.exe"],
-        "paint": ["mspaint.exe"],
         "explorer": ["explorer.exe"],
         "file explorer": ["explorer.exe"],
     }
@@ -342,13 +339,14 @@ async def close_application(
                 continue
         
         if closed_processes:
-            return f"Successfully closed {app_name}: {', '.join(closed_processes)}"
+            return f"Successfully closed {application_name}: {', '.join(closed_processes)}"
         else:
-            return f"{app_name} is not currently running."
+            return f"{application_name} is not currently running."
             
     except Exception as e:
-        logging.error(f"Error closing {app_name}: {e}")
-        return f"An error occurred while trying to close {app_name}: {str(e)}"
+        logging.error(f"Error closing {application_name}: {e}")
+        return f"An error occurred while trying to close {application_name}: {str(e)}"
+
 
 @function_tool()
 async def run_command(

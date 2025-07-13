@@ -1,0 +1,420 @@
+text,label
+open chrome,open_application
+launch vscode,open_application
+start spotify,open_application
+run calculator,open_application
+open notepad,open_application
+open discord,open_application
+open slack,open_application
+launch photoshop,open_application
+start excel,open_application
+run terminal,open_application
+open outlook,open_application
+start word,open_application
+launch powerpoint,open_application
+run cmd,open_application
+open edge,open_application
+can you open chrome for me,open_application
+please launch notepad,open_application
+I need to open excel,open_application
+help me start spotify,open_application
+launch firefox browser,open_application
+start the calculator app,open_application
+open up discord,open_application
+run the terminal program,open_application
+open microsoft word,open_application
+launch adobe photoshop,open_application
+start up the music player,open_application
+open my email client,open_application
+run visual studio code,open_application
+launch the presentation software,open_application
+open the text editor,open_application
+close chrome,close_application
+quit notepad,close_application
+exit discord,close_application
+shut down spotify,close_application
+close photoshop,close_application
+quit vscode,close_application
+stop excel,close_application
+exit terminal,close_application
+close outlook,close_application
+quit word,close_application
+close slack,close_application
+shut down edge,close_application
+close this app,close_application
+shut that down,close_application
+kill the program,close_application
+close the browser,close_application
+quit the application,close_application
+exit the program,close_application
+shut down the app,close_application
+close the window,close_application
+stop the application,close_application
+end the program,close_application
+terminate the app,close_application
+close the software,close_application
+quit this program,close_application
+exit this application,close_application
+what's the weather in New York,get_weather
+check weather for Tokyo,get_weather
+how's the weather in Paris,get_weather
+tell me the weather in London,get_weather
+weather in San Francisco,get_weather
+what will the weather be in Rome,get_weather
+show me the weather in Madrid,get_weather
+give me the forecast for Chicago,get_weather
+is it raining in Seattle,get_weather
+forecast for Miami,get_weather
+weather today,get_weather
+how's the weather,get_weather
+weather forecast,get_weather
+check today's weather,get_weather
+what's the weather like,get_weather
+tell me today's forecast,get_weather
+is it sunny outside,get_weather
+will it rain today,get_weather
+check the weather conditions,get_weather
+what's the temperature,get_weather
+weather report,get_weather
+current weather conditions,get_weather
+today's weather forecast,get_weather
+weather update,get_weather
+search for python tutorials,search_web
+look up weather in Berlin,search_web
+find information about AI,search_web
+google latest tech news,search_web
+search for best pizza places,search_web
+look up travel destinations,search_web
+find out about electric cars,search_web
+google cheapest flights,search_web
+search for healthy recipes,search_web
+find python documentation,search_web
+search the internet for,search_web
+google something for me,search_web
+look up on the web,search_web
+find online information about,search_web
+web search for,search_web
+search online for,search_web
+look it up on google,search_web
+find on the internet,search_web
+search the web for,search_web
+google search for,search_web
+look up information about,search_web
+find details about,search_web
+search for information on,search_web
+web lookup for,search_web
+type hello world,type_text
+write my name,type_text
+input my address,type_text
+enter the password,type_text
+type the command,type_text
+write shopping list,type_text
+input search term,type_text
+enter the note,type_text
+type meeting details,type_text
+write email body,type_text
+put in this text,type_text
+enter this message,type_text
+insert this content,type_text
+input the data,type_text
+write this down,type_text
+type out the text,type_text
+enter the information,type_text
+input the details,type_text
+write the content,type_text
+type the message,type_text
+enter the text,type_text
+input this phrase,type_text
+write the document,type_text
+type the response,type_text
+press enter,press_key
+hit space,press_key
+push escape,press_key
+press control c,press_key
+press tab,press_key
+press shift,press_key
+hit backspace,press_key
+push delete,press_key
+press alt f4,press_key
+press windows key,press_key
+hit the enter key,press_key
+press return,press_key
+push the space bar,press_key
+tap escape,press_key
+press the tab key,press_key
+hit control key,press_key
+push the delete button,press_key
+press function key,press_key
+hit the arrow key,press_key
+press page down,press_key
+push home key,press_key
+press end key,press_key
+hit insert key,press_key
+press caps lock,press_key
+push shift key,press_key
+take a screenshot,take_screenshot
+capture the screen,take_screenshot
+screenshot now,take_screenshot
+grab screen,take_screenshot
+take snapshot of display,take_screenshot
+capture window,take_screenshot
+save screen image,take_screenshot
+snap the screen,take_screenshot
+screenshot please,take_screenshot
+take a photo of screen,take_screenshot
+capture screen image,take_screenshot
+save screenshot,take_screenshot
+screenshot this,take_screenshot
+capture what's on screen,take_screenshot
+take screen photo,take_screenshot
+screenshot and save,take_screenshot
+grab a screenshot,take_screenshot
+capture the display,take_screenshot
+take a screen capture,take_screenshot
+screenshot the window,take_screenshot
+save screen capture,take_screenshot
+capture screen contents,take_screenshot
+take display photo,take_screenshot
+screenshot the desktop,take_screenshot
+read the screen,read_screen
+what's on screen,read_screen
+describe the screen,read_screen
+see the screen,read_screen
+read what's displayed,read_screen
+tell me what's on screen,read_screen
+interpret screen contents,read_screen
+explain what's shown,read_screen
+summarize the screen,read_screen
+read current window,read_screen
+read what's on the screen,read_screen
+analyze screen content,read_screen
+understand what's displayed,read_screen
+tell me what I'm looking at,read_screen
+interpret what's shown,read_screen
+scan the screen text,read_screen
+read screen aloud,read_screen
+describe what's visible,read_screen
+explain screen contents,read_screen
+read the display,read_screen
+analyze what's on screen,read_screen
+understand the screen,read_screen
+read the current view,read_screen
+describe the current screen,read_screen
+set volume to 50,adjust_volume
+volume up,adjust_volume
+volume down,adjust_volume
+mute,adjust_volume
+unmute,adjust_volume
+turn volume higher,adjust_volume
+make volume lower,adjust_volume
+increase volume,adjust_volume
+decrease volume,adjust_volume
+lower volume to 30,adjust_volume
+raise the volume,adjust_volume
+turn up the sound,adjust_volume
+turn down the sound,adjust_volume
+mute the audio,adjust_volume
+unmute the sound,adjust_volume
+adjust the volume,adjust_volume
+change volume level,adjust_volume
+set sound level,adjust_volume
+control volume,adjust_volume
+modify audio level,adjust_volume
+turn off sound,adjust_volume
+turn on sound,adjust_volume
+boost the volume,adjust_volume
+reduce the volume,adjust_volume
+what time is it,get_current_time
+current time,get_current_time
+tell me the time,get_current_time
+what's the time now,get_current_time
+can you tell me the time,get_current_time
+show me the time,get_current_time
+what's the current time,get_current_time
+give me the time,get_current_time
+check the time,get_current_time
+time right now,get_current_time
+present time,get_current_time
+what time it is,get_current_time
+display the time,get_current_time
+show current time,get_current_time
+tell me current time,get_current_time
+what date is it,get_current_date
+current date,get_current_date
+tell me today's date,get_current_date
+what's today,get_current_date
+today's date please,get_current_date
+what's the date today,get_current_date
+give me today's date,get_current_date
+show me the date,get_current_date
+what's the current date,get_current_date
+tell me the date,get_current_date
+check today's date,get_current_date
+today's date,get_current_date
+what day is it today,get_current_date
+display today's date,get_current_date
+show current date,get_current_date
+send email to john@example.com subject meeting,send_email
+compose email,send_email
+email bob@example.com about project,send_email
+send email to alice@example.com subject update,send_email
+email support@company.com,send_email
+mail john.doe@example.com,send_email
+message admin@site.org,send_email
+send message to contact@business.com,send_email
+email the team about updates,send_email
+compose message to client,send_email
+send mail to supervisor,send_email
+draft email to colleague,send_email
+write email to customer,send_email
+message the administrator,send_email
+send email about meeting,send_email
+compose email message,send_email
+email someone,send_email
+send electronic mail,send_email
+draft a message,send_email
+write an email,send_email
+open file document.txt,open_file
+open report.pdf,open_file
+load file budget.xlsx,open_file
+open notes.doc,open_file
+load presentation.ppt,open_file
+open config.json,open_file
+load data.csv,open_file
+open script.py,open_file
+load image.png,open_file
+open video.mp4,open_file
+load audio.wav,open_file
+open database.db,open_file
+load settings.ini,open_file
+open readme.md,open_file
+load backup.zip,open_file
+open the file,open_file
+load the document,open_file
+open this file,open_file
+load that document,open_file
+open the text file,open_file
+load the spreadsheet,open_file
+open the presentation,open_file
+load the image,open_file
+open the configuration,open_file
+scroll down by 2000 units,scroll_mouse
+scroll up 1500,scroll_mouse
+please scroll down,scroll_mouse
+move the page up 3000,scroll_mouse
+scroll the window up,scroll_mouse
+scroll it down slowly,scroll_mouse
+scroll the screen down by 1000,scroll_mouse
+move down on the page,scroll_mouse
+scroll back to top,scroll_mouse
+scroll all the way down,scroll_mouse
+left click,click_mouse
+right click,click_mouse
+perform a left click,click_mouse
+click the left mouse button,click_mouse
+click on the screen,click_mouse
+please click here,click_mouse
+click the button,click_mouse
+do a right click,click_mouse
+open context menu with right click,click_mouse
+double click,click_mouse
+move cursor to 100 200,move_cursor
+move the mouse to the top right,move_cursor
+move my cursor to 500 500,move_cursor
+place cursor at 300 300,move_cursor
+move mouse here,move_cursor
+set cursor position to 400 600,move_cursor
+move the cursor down,move_cursor
+bring cursor to bottom left,move_cursor
+move it to center,move_cursor
+move mouse pointer,move_cursor
+get my cursor position,get_cursor_position
+where is the cursor,get_cursor_position
+tell me cursor location,get_cursor_position
+find current mouse position,get_cursor_position
+what is my mouse location,get_cursor_position
+report cursor coordinates,get_cursor_position
+where's the mouse right now,get_cursor_position
+get mouse position,get_cursor_position
+show cursor location,get_cursor_position
+tell me the mouse coordinates,get_cursor_position
+what's my screen size,get_screen_size
+tell me screen resolution,get_screen_size
+get display dimensions,get_screen_size
+how big is my screen,get_screen_size
+what is my display size,get_screen_size
+report screen width and height,get_screen_size
+show screen resolution,get_screen_size
+tell me monitor size,get_screen_size
+get my screen dimensions,get_screen_size
+display screen resolution,get_screen_size
+run dir in terminal,run_command
+execute ls -la,run_command
+run the command ipconfig,run_command
+please run ping google.com,run_command
+execute a shell command,run_command
+open powershell and run dir,run_command
+run shutdown now,run_command
+start cmd and type whoami,run_command
+run command line command,run_command
+run clear in terminal,run_command
+start a mock technical interview for amazon,start_interview_session
+begin a mock behavioral interview for google,start_interview_session
+start a mock interview for meta,start_interview_session
+launch a mock behavioral and technical interview,start_interview_session
+begin an amazon mock interview,start_interview_session
+start technical interview session,start_interview_session
+start behavioral interview session,start_interview_session
+initiate mock interview,start_interview_session
+please start an interview session,start_interview_session
+begin mock interview session,start_interview_session
+next question please,get_next_question
+give me the next interview question,get_next_question
+what's the next question,get_next_question
+next one,get_next_question
+continue with the next question,get_next_question
+please ask the next question,get_next_question
+next prompt,get_next_question
+proceed to next question,get_next_question
+ask me the next question,get_next_question
+move to next question,get_next_question
+set my resume path,set_resume_path
+set resume to /documents/resume.pdf,set_resume_path
+define my resume location,set_resume_path
+upload my resume,set_resume_path
+set the path for my resume,set_resume_path
+input my resume file,set_resume_path
+update resume path,set_resume_path
+load my resume document,set_resume_path
+choose resume file,set_resume_path
+save my resume path,set_resume_path
+tell about yourself,tell_about_yourself
+answer tell me about yourself,tell_about_yourself
+respond to tell me about yourself,tell_about_yourself
+how do you answer tell about yourself,tell_about_yourself
+reply to tell about yourself question,tell_about_yourself
+simulate tell about yourself answer,tell_about_yourself
+give me tell about yourself response,tell_about_yourself
+what's your tell about yourself answer,tell_about_yourself
+mock answer for tell about yourself,tell_about_yourself
+interview question tell about yourself,tell_about_yourself
+evaluate my interview answers,evaluate_interview
+score my responses,evaluate_interview
+give feedback on my interview,evaluate_interview
+assess my answers,evaluate_interview
+rate my mock interview,evaluate_interview
+review my responses,evaluate_interview
+provide feedback on answers,evaluate_interview
+evaluate my performance,evaluate_interview
+analyze my interview,evaluate_interview
+grade my interview session,evaluate_interview
+check my code solution,check_code_solution
+review this code,check_code_solution
+is my code correct,check_code_solution
+analyze my code answer,check_code_solution
+evaluate my code submission,check_code_solution
+give feedback on code,check_code_solution
+check solution for correctness,check_code_solution
+validate my code,check_code_solution
+please review my code,check_code_solution
+verify my code answer,check_code_solution
