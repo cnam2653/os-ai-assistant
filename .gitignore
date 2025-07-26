@@ -1,2 +1,28 @@
 .env
 venv/
+
+# Model files and training artifacts
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.pkl
+*.h5
+tokenizer.json
+vocab.txt
+
+# Model directories
+intent_model/
+models/
+results/
+__pycache__/
+
+# Training outputs
+checkpoint-*/
+logs/
+
+# Large data files
+*.wav
+*.mp3
+*.mp4
+*.avi
