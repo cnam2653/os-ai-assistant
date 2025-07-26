@@ -15,14 +15,13 @@ from livekit.plugins import noise_cancellation
 from livekit.plugins import google
 from prompts import AGENT_INSTRUCTION, SESSION_INSTRUCTION
 
-# Add OpenAI import
-import openai
+# OpenAI import removed - using hybrid routing instead
 
 # Import Redis Memory System
-# from jarvis_memory import JarvisMemory
+from jarvis_memory import JarvisMemory
 
 # Import Local Intent Parser
-# from local_intent_parser import LocalIntentParser
+from local_intent_parser import LocalIntentParser
 
 # Import all tools from tools package
 from tools.web_utils import get_weather, search_web, get_current_time, get_current_date, get_current_datetime
@@ -58,23 +57,22 @@ from tools.audio_control import adjust_volume
 # Load .env variables
 load_dotenv()
 
-# Initialize OpenAI client
-openai_client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# OpenAI client removed - using hybrid routing instead
 
-# Initialize Redis Memory System
-# memory = JarvisMemory(
-#     redis_host=os.getenv("REDIS_HOST", "localhost"),
-#     redis_port=int(os.getenv("REDIS_PORT", 6379)),
-#     redis_db=int(os.getenv("REDIS_DB", 0))
-# )
+# Initialize Redis Memory System (only for user preferences)
+memory = JarvisMemory(
+    redis_host=os.getenv("REDIS_HOST", "localhost"),
+    redis_port=int(os.getenv("REDIS_PORT", 6379)),
+    redis_db=int(os.getenv("REDIS_DB", 0))
+)
 
 # Initialize Local Intent Parser
-# try:
-#     intent_parser = LocalIntentParser(model_path="./intent_model/")
-#     print("Local intent parser loaded successfully!")
-# except Exception as e:
-#     print(f"Error loading local intent parser: {e}")
-#     intent_parser = None
+try:
+    intent_parser = LocalIntentParser(model_path="./intent_model/")
+    print("Local intent parser loaded successfully!")
+except Exception as e:
+    print(f"Error loading local intent parser: {e}")
+    intent_parser = None
 
 # --------------------------------------------- 
 # Speech-to-Text Handler
@@ -148,7 +146,7 @@ class STTHandler:
 # Local Function Parser with Memory
 # --------------------------------------------- 
 class LocalFunctionParser:
-    def __init__(self, intent_parser=None, memory_system=None):
+    def __init__(self, intent_parser: LocalIntentParser, memory_system: JarvisMemory):
         self.intent_parser = intent_parser
         self.memory = memory_system
         self.available_functions = {
@@ -183,27 +181,23 @@ class LocalFunctionParser:
             "check_code_solution": check_code_solution
         }
     
-    async def parse_and_execute(self, text: str, session, room_id: str = None):
-        """Parse text for function calls using local intent parser and execute them"""
-        # if not self.intent_parser:
-        #     print("Local intent parser not available")
-        #     return False
+    async def try_parse_tool(self, text: str) -> bool:
+        """Try to parse as a tool call - returns True if successful, False if should fall back to LLM"""
+        if not self.intent_parser:
+            return False
         
-        # try:
-        #     # Use local intent parser instead of GPT
-        #     function_call = self.intent_parser.parse_and_extract_function(text)
+        try:
+            function_call = self.intent_parser.parse_and_extract_function(text)
             
-        #     if function_call and function_call.get("function_name"):
-        #         await self._execute_function(function_call, session, room_id, text)
-        #         return True
-        #     else:
-        #         print("No function detected or confidence too low")
-        #         return False
+            if function_call and function_call.get("function_name"):
+                await self._execute_function(function_call, None, None, text)
+                return True
+            else:
+                return False  # No tool detected, use LLM
                 
-        # except Exception as e:
-        #     print(f"Error parsing function: {e}")
-        #     return False
-        return False  # Skip local parsing for performance test
+        except Exception as e:
+            print(f"Error in local parsing: {e}")
+            return False  # Fall back to LLM on error
     
     async def _execute_function(self, function_call: dict, session, room_id: str, original_command: str):
         """Execute the parsed function and store in memory"""
@@ -226,42 +220,31 @@ class LocalFunctionParser:
                 
                 print(f"Function {function_name} executed successfully: {result}")
                 
-                # Store command execution in memory
-                # self.memory.store_command_execution(
-                #     command=original_command,
-                #     function_name=function_name,
-                #     parameters=parameters,
-                #     result=result,
-                #     room_id=room_id
-                # )
+                # Only log usage metrics (no conversation storage)
+                self.memory.increment_usage_metric(f"function_{function_name}")
                 
-                # Increment usage metric
-                # self.memory.increment_usage_metric(f"function_{function_name}")
-                
-                # Use OpenAI TTS for function result responses
-                response_text = f"Task completed successfully. {result}"
-                await play_openai_tts(response_text)
                 print(f"Function executed successfully: {result}")
                 
             except Exception as e:
                 error_msg = f"Error executing {function_name}: {str(e)}"
                 print(f"{error_msg}")
-                await play_openai_tts(f"Error: {error_msg}")
-                print(f"Error: {error_msg}")
         else:
             print(f"Unknown function: {function_name}")
+
+# --------------------------------------------- 
+# Hybrid Smart Routing (now integrated into Agent.on_user_turn_completed)
+# --------------------------------------------- 
 
 # --------------------------------------------- 
 # Enhanced LiveKit Agent with Memory
 # --------------------------------------------- 
 class JarvisAgent(Agent):
-    def __init__(self, memory_system=None):
+    def __init__(self, memory_system: JarvisMemory):
         self.memory = memory_system
         
         # Get user preferences for voice settings
-        # voice_preference = self.memory.get_user_preference("voice", None)
-        # selected_voice = voice_preference if voice_preference else "Aoede"
-        selected_voice = "Aoede"
+        voice_preference = self.memory.get_user_preference("voice", None)
+        selected_voice = voice_preference if voice_preference else "Aoede"
         
         super().__init__(
             instructions=AGENT_INSTRUCTION,
@@ -303,7 +286,7 @@ class JarvisAgent(Agent):
         )
 
 # --------------------------------------------- 
-# OpenAI Text-to-Speech Handler
+# OpenAI Text-to-Speech Handler (DISABLED - using LiveKit)
 # --------------------------------------------- 
 async def play_openai_tts(text: str, voice: str = "onyx"):
     """Play text using OpenAI's TTS with Jarvis-like voice"""
@@ -359,7 +342,7 @@ def _play_audio_sync(filename):
         print(f"Audio playback error: {e}")
 
 # --------------------------------------------- 
-# OpenAI + Gemini Voice Handler
+# OpenAI + Gemini Voice Handler (DISABLED - using hybrid routing)
 # --------------------------------------------- 
 async def handle_openai_with_voice(transcription: str, session, room_id: str = None):
     """Generate response with OpenAI, then use Gemini voice synthesis"""
@@ -414,7 +397,7 @@ async def handle_openai_with_voice(transcription: str, session, room_id: str = N
             print("I'm having trouble processing that right now. Could you try again?")
 
 # --------------------------------------------- 
-# OpenAI Backup Handler (Original)
+# OpenAI Backup Handler (DISABLED - using hybrid routing)
 # --------------------------------------------- 
 async def handle_openai_backup(transcription: str, session, room_id: str = None):
     """Handle conversation using OpenAI as backup"""
@@ -611,20 +594,12 @@ async def listen_for_wake_word_and_respond(session, room_id: str = None, stt_han
                     if transcription:
                         print(f"Transcribed: '{transcription}'")
                         
-                        # Check for special memory commands first
-                        if await handle_memory_commands(transcription, session, room_id):
-                            speech_detected = True
-                            break  # Exit immediately after processing
-                        # Try local function parsing
-                        elif await function_parser.parse_and_execute(transcription, session, room_id):
-                            speech_detected = True
-                            break  # Exit immediately after processing
-                        # If no function detected, use OpenAI + Gemini voice
-                        else:
-                            print("No function detected, using OpenAI with Gemini voice")
-                            await handle_openai_with_voice(transcription, session, room_id)
-                            speech_detected = True
-                            break  # Exit immediately after processing
+                        # Try local parser first, then fallback to LiveKit
+                        tool_handled = await function_parser.try_parse_tool(transcription)
+                        if not tool_handled:
+                            await session.generate_reply(instructions=transcription)
+                        speech_detected = True
+                        break  # Exit immediately after processing
                     
                     await asyncio.sleep(0.1)
                     timeout_counter += 1
@@ -659,12 +634,12 @@ async def listen_for_wake_word_and_respond(session, room_id: str = None, stt_han
 # --------------------------------------------- 
 async def entrypoint(ctx: agents.JobContext):
     """Main entry point for the agent"""
-    # Use simplified LiveKit session similar to the fast example
+    # Create LiveKit session (like your working code)
     session = AgentSession()
 
     await session.start(
         room=ctx.room,
-        agent=JarvisAgent(),
+        agent=JarvisAgent(memory),
         room_input_options=RoomInputOptions(
             video_enabled=True,
             noise_cancellation=noise_cancellation.BVC(),
@@ -673,9 +648,10 @@ async def entrypoint(ctx: agents.JobContext):
 
     await ctx.connect()
 
-    await session.generate_reply(
-        instructions=SESSION_INSTRUCTION,
-    )
+    # Initial greeting
+    await session.generate_reply(instructions=SESSION_INSTRUCTION)
+    
+    print("LiveKit agent ready with Redis memory and local parser for wake word system")
 
 
 # --------------------------------------------- 
