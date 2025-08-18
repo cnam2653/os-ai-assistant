@@ -16,7 +16,7 @@ except ImportError:
 
 @function_tool()
 async def adjust_volume(
-    context: RunContext,  # type: ignore
+    context: RunContext,  
     action: str,
     amount: int = 5) -> str:
     """
