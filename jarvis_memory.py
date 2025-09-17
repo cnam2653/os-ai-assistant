@@ -28,7 +28,7 @@ class JarvisMemory:
             return f"session:{room_id}"
         return f"session:default:{datetime.now().strftime('%Y%m%d')}"
     
-    # ===== CONVERSATION MEMORY =====
+    # CONVERSATION MEMORY
     def store_conversation(self, user_input: str, assistant_response: str, 
                           function_executed: str = None, room_id: str = None):
         """Store conversation in Redis"""
@@ -83,7 +83,7 @@ class JarvisMemory:
         
         return context
     
-    # ===== CONTEXT MEMORY =====
+    # CONTEXT MEMORY 
     def set_context(self, context_type: str, context_data: Any, 
                    expiry_minutes: int = 60, room_id: str = None):
         """Set context (current task, user preferences, etc.)"""
@@ -135,7 +135,7 @@ class JarvisMemory:
             if keys:
                 self.redis_client.delete(*keys)
     
-    # ===== COMMAND MEMORY =====
+    # COMMAND MEMORY 
     def store_command_execution(self, command: str, function_name: str, 
                               parameters: Dict, result: Any, room_id: str = None):
         """Store executed command for learning patterns"""
@@ -183,7 +183,7 @@ class JarvisMemory:
         
         return patterns
     
-    # ===== USER PREFERENCES =====
+    # USER PREFERENCES 
     def set_user_preference(self, preference_key: str, value: Any, room_id: str = None):
         """Set user preference (permanent storage)"""
         if not self.redis_client:
@@ -216,7 +216,7 @@ class JarvisMemory:
         prefs = self.redis_client.hgetall(pref_key)
         return {k: json.loads(v) for k, v in prefs.items()}
     
-    # ===== ANALYTICS =====
+    # ANALYTICS 
     def increment_usage_metric(self, metric_name: str):
         """Track usage metrics"""
         if not self.redis_client:
@@ -248,7 +248,7 @@ class JarvisMemory:
         
         return stats
     
-    # ===== CACHE MANAGEMENT =====
+    # CACHE MANAGEMENT 
     def cache_api_response(self, endpoint: str, params: Dict, response: Any, 
                           expiry_minutes: int = 30):
         """Cache API responses to reduce external calls"""
@@ -282,7 +282,7 @@ class JarvisMemory:
             return json.loads(cached)["response"]
         return None
     
-    # ===== CLEANUP METHODS =====
+    # CLEANUP METHODS 
     def cleanup_old_data(self, days_to_keep: int = 30):
         """Clean up old data"""
         if not self.redis_client:
