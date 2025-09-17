@@ -74,9 +74,7 @@ except Exception as e:
     print(f"Error loading local intent parser: {e}")
     intent_parser = None
 
-# --------------------------------------------- 
 # Speech-to-Text Handler
-# --------------------------------------------- 
 class STTHandler:
     def __init__(self):
         self.recognizer = sr.Recognizer()
@@ -142,9 +140,7 @@ class STTHandler:
             return None
         return None
 
-# --------------------------------------------- 
 # Local Function Parser with Memory
-# --------------------------------------------- 
 class LocalFunctionParser:
     def __init__(self, intent_parser: LocalIntentParser, memory_system: JarvisMemory):
         self.intent_parser = intent_parser
@@ -231,13 +227,10 @@ class LocalFunctionParser:
         else:
             print(f"Unknown function: {function_name}")
 
-# --------------------------------------------- 
-# Hybrid Smart Routing (now integrated into Agent.on_user_turn_completed)
-# --------------------------------------------- 
 
-# --------------------------------------------- 
+# Hybrid Smart Routing 
+
 # Enhanced LiveKit Agent with Memory
-# --------------------------------------------- 
 class JarvisAgent(Agent):
     def __init__(self, memory_system: JarvisMemory):
         self.memory = memory_system
@@ -285,9 +278,8 @@ class JarvisAgent(Agent):
             ],
         )
 
-# --------------------------------------------- 
-# OpenAI Text-to-Speech Handler (DISABLED - using LiveKit)
-# --------------------------------------------- 
+
+# OpenAI Text-to-Speech Handler (DISABLED for now - using LiveKit)
 async def play_openai_tts(text: str, voice: str = "onyx"):
     """Play text using OpenAI's TTS with Jarvis-like voice"""
     try:
@@ -341,9 +333,8 @@ def _play_audio_sync(filename):
     except Exception as e:
         print(f"Audio playback error: {e}")
 
-# --------------------------------------------- 
-# OpenAI + Gemini Voice Handler (DISABLED - using hybrid routing)
-# --------------------------------------------- 
+
+# OpenAI + Gemini Voice Handler (DISABLED for now - using hybrid routing)
 async def handle_openai_with_voice(transcription: str, session, room_id: str = None):
     """Generate response with OpenAI, then use Gemini voice synthesis"""
     try:
@@ -396,9 +387,7 @@ async def handle_openai_with_voice(transcription: str, session, room_id: str = N
         else:
             print("I'm having trouble processing that right now. Could you try again?")
 
-# --------------------------------------------- 
-# OpenAI Backup Handler (DISABLED - using hybrid routing)
-# --------------------------------------------- 
+# OpenAI Backup Handler (DISABLED for now - using hybrid routing) 
 async def handle_openai_backup(transcription: str, session, room_id: str = None):
     """Handle conversation using OpenAI as backup"""
     try:
@@ -441,9 +430,7 @@ async def handle_openai_backup(transcription: str, session, room_id: str = None)
         # Final fallback
         await session.generate_reply(instructions="I'm having trouble processing that right now. Could you try again?")
 
-# --------------------------------------------- 
 # Memory Command Handler
-# --------------------------------------------- 
 async def handle_memory_commands(transcription: str, session, room_id: str = None) -> bool:
     """Handle special memory-related commands"""
     text = transcription.lower()
@@ -543,9 +530,7 @@ async def handle_memory_commands(transcription: str, session, room_id: str = Non
     
     return False
 
-# --------------------------------------------- 
 # Enhanced Wake Word Detection with Local Intent Parser
-# --------------------------------------------- 
 async def listen_for_wake_word_and_respond(session, room_id: str = None, stt_handler=None, function_parser=None):
     access_key = os.environ["PORCUPINE_ACCESS_KEY"]
     porcupine = pvporcupine.create(access_key=access_key, keywords=["jarvis"])
@@ -629,9 +614,7 @@ async def listen_for_wake_word_and_respond(session, room_id: str = None, stt_han
         porcupine.delete()
         stt_handler.stop_listening()
 
-# --------------------------------------------- 
 # Main Agent Session Handler
-# --------------------------------------------- 
 async def entrypoint(ctx: agents.JobContext):
     """Main entry point for the agent"""
     # Create LiveKit session (like your working code)
